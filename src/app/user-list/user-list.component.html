@@ -1,11 +1,17 @@
 <header>
   <h1>User Dashboard</h1>
   <div class="search-container">
-    <input type="text" (input)="search($event)" placeholder="Search by ID" />
+    <input
+      #searchInput
+      type="text"
+      (input)="search($event)"
+      placeholder="Search by ID"
+    />
     <button *ngIf="isSearching" (click)="clearSearch()">Clear</button>
   </div>
 </header>
 
+<ng-progress id="myProgress" />
 <ng-container *ngIf="isSearching; else userList">
   <div class="search-results">
     <div

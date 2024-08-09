@@ -1,12 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { withCache } from '@ngneat/cashew';
 import { map, Observable } from 'rxjs';
 import {
   MultipleUsersResponse,
   SingleUserResponse,
   User,
 } from './models/user.model';
-import { withCache } from '@ngneat/cashew';
 
 @Injectable({
   providedIn: 'root',

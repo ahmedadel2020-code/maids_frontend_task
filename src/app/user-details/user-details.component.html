@@ -1,16 +1,15 @@
-<div class="user-details">
+<ng-progress id="myProgress" />
+
+<div *ngIf="!isLoading" class="user-details">
   <button class="back-button" (click)="goBack()">
     <i class="fas fa-arrow-left"></i> Back
   </button>
   <div class="user-info">
-    <img
-      [src]="user?.avatar"
-      [alt]="user?.first_name + ' ' + user?.last_name"
-    />
+    <img [src]="user.avatar" [alt]="user.first_name + ' ' + user.last_name" />
     <div class="details">
-      <h2>{{ user?.first_name }} {{ user?.last_name }}</h2>
-      <p>ID: {{ user?.id }}</p>
-      <p>Email: {{ user?.email }}</p>
+      <h2>{{ user.first_name }} {{ user.last_name }}</h2>
+      <p>ID: {{ user.id }}</p>
+      <p>Email: {{ user.email }}</p>
     </div>
   </div>
 </div>

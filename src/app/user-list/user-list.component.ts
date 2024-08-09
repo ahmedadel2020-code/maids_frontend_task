@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import {
   catchError,
@@ -16,26 +16,34 @@ import { UserService } from '../user.service';
 import { MultipleUsersResponse, User } from '../models/user.model';
 import { UserCardComponent } from '../user-card/user-card.component';
 import { CommonModule } from '@angular/common';
+import { NgProgress, NgProgressModule, NgProgressRef } from 'ngx-progressbar';
 
 @Component({
   selector: 'app-user-list',
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss'],
   standalone: true,
-  imports: [UserCardComponent, RouterOutlet, CommonModule],
+  imports: [UserCardComponent, RouterOutlet, CommonModule, NgProgressModule],
 })
 export class UserListComponent implements OnInit {
   users$!: Observable<User[]>;
   searchResult: User | null = null;
   currentPage: number = 1;
   totalPages!: number;
-  private searchTerms = new Subject<string>();
+  searchTerms = new Subject<string>();
   isSearching: boolean = false;
-  private searchSubscription: Subscription | null = null;
+  searchSubscription: Subscription | null = null;
+  progressRef!: NgProgressRef;
+  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
 
-  constructor(private userService: UserService, private router: Router) {}
+  constructor(
+    private userService: UserService,
+    private router: Router,
+    private progress: NgProgress
+  ) {}
 
   ngOnInit() {
+    this.progressRef = this.progress.ref('myProgress');
     this.loadUsers(this.currentPage);
     this.setupSearch();
   }
@@ -47,10 +55,12 @@ export class UserListComponent implements OnInit {
   }
 
   loadUsers(page: number) {
+    this.progressRef.start();
     this.users$ = this.userService.getUsers(page).pipe(
       tap((response: MultipleUsersResponse) => {
         this.currentPage = response.page;
         this.totalPages = response.total_pages;
+        this.progressRef.complete();
       }),
       map((response: MultipleUsersResponse) => response.data)
     );
@@ -82,11 +92,16 @@ export class UserListComponent implements OnInit {
           if (term) {
             const id = parseInt(term, 10);
             if (!isNaN(id)) {
-              console.log('Searching for user with ID:', id); // Debug log
+              this.progressRef.start();
+
               return this.userService.getUserById(id).pipe(
-                tap((user) => console.log('User found:', user)), // Debug log
+                tap({
+                  complete: () => {
+                    this.progressRef.complete();
+                  },
+                }),
                 catchError((error) => {
-                  console.error('Error searching for user:', error); // Debug log
+                  this.progressRef.complete();
                   return of(null);
                 })
               );
@@ -97,7 +112,6 @@ export class UserListComponent implements OnInit {
       )
       .subscribe((result) => {
         this.searchResult = result;
-        console.log('Search result:', result); // Debug log
       });
   }
 
@@ -109,5 +123,8 @@ export class UserListComponent implements OnInit {
     this.isSearching = false;
     this.searchResult = null;
     this.searchTerms.next('');
+    if (this.searchInput) {
+      this.searchInput.nativeElement.value = '';
+    }
   }
 }
