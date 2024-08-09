@@ -1,0 +1,47 @@
+<header>
+  <h1>User Dashboard</h1>
+  <div class="search-container">
+    <input type="text" (input)="search($event)" placeholder="Search by ID" />
+    <button *ngIf="isSearching" (click)="clearSearch()">Clear</button>
+  </div>
+</header>
+
+<ng-container *ngIf="isSearching; else userList">
+  <div class="search-results">
+    <div
+      *ngIf="searchResult"
+      class="user-card"
+      (click)="navigateToUserDetails(searchResult.id)"
+    >
+      <img
+        [src]="searchResult.avatar"
+        [alt]="searchResult.first_name + ' ' + searchResult.last_name"
+      />
+      <h3>{{ searchResult.first_name }} {{ searchResult.last_name }}</h3>
+      <p>ID: {{ searchResult.id }}</p>
+    </div>
+    <p *ngIf="isSearching && !searchResult">No user found with this ID.</p>
+  </div>
+</ng-container>
+
+<ng-template #userList>
+  <main>
+    <div class="user-list">
+      <div
+        *ngFor="let user of users$ | async"
+        (click)="navigateToUserDetails(user.id)"
+      >
+        <app-user-card [user]="user"></app-user-card>
+      </div>
+    </div>
+    <div class="pagination">
+      <button (click)="prevPage()" [disabled]="currentPage === 1">Prev</button>
+      <span>Page {{ currentPage }}</span>
+      <button (click)="nextPage()" [disabled]="currentPage >= totalPages">
+        Next
+      </button>
+    </div>
+  </main>
+</ng-template>
+
+<router-outlet></router-outlet>
